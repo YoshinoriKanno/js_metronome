@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="metronome.css">
+    <style>
+      #signals_container {
+        list-style: none;
+        padding-left: 0;
+        margin: 10px 0;
+      }
+      #signals_container li {
+        line-height: 20px;
+        padding-top: 10px;
+        display: inline-block;
+        text-align: center;
+        width: 30px;
+      }
+      #signals_container li.fz-30 {
+        font-size: 30px;
+        padding-top: 0;
+        line-height: 1;
+      }
+    </style>
+  </head>
+
+  <body>
+    <input id="bpm" type="text" value="120">
+    <input type="button" id="bpm_set_btn" value="BPM Set">
+    <p>BPM は <span id="bpm_display">120</span> です。</p>
+    <ul id="signals_container">
+      <li>🙆‍♂️</li>
+      <li>🙆‍♂️</li>
+      <li>🙆‍♂️</li>
+      <li>🙆‍♂️</li>
+    </ul>
+    <div>
+
+      <span id="start">[ start ]</span> <span id="stop">[ stop ]</span>
+    </div>
+        <audio id="claves" preload="auto">
+          <source src="sounds/claves.mp3" type="audio/mp3">
+        </audio>
+        <audio id="rimshot" preload="auto">
+          <source src="sounds/rimshot.mp3" type="audio/mp3">
+        </audio>
+        <!-- <script src="metronome.js"></script> -->
+        <script>
+          function claves() {
+            // 対象となるID名
+            const claves = document.getElementById('claves');
+
+            // 初回以外だったら音声ファイルを巻き戻す
+            if (typeof (claves.currentTime) != 'undefined') {
+              claves.currentTime = 0;
+            }
+
+            // [ID:claves]の音声ファイルを再生[play()]する
+            claves.play();
+          }
+          function rimshot() {
+            const rimshot = document.getElementById('rimshot');
+
+            if (typeof (rimshot.currentTime) != 'undefined') {
+              rimshot.currentTime = 0;
+            }
+
+            rimshot.play();
+          }
+        </script>
+        <script>
+          const signals = document.getElementById('signals_container').getElementsByTagName('li');
+
+          let i = 0;
+          let timerId;
+          let isRunning = false;
+          let bpm = 500;
+
+
+          function bpm_set() {
+            let bpm_input = document.getElementById("bpm").value;
+            bpm = 60000 / parseInt(bpm_input);
+            document.getElementById("bpm_display").innerText = bpm_input;
+          }
+          document.getElementById("bpm_set_btn").onclick = bpm_set;
+          
+
+          function start() {
+            if (isRunning === false) {
+              signals[0].classList.add('fz-30');
+              claves();
+              sequence();
+              console.log('started');
+              isRunning = true;
+            }
+          }
+
+
+          function sequence() {
+            timerId = setTimeout(function () {
+              signals[i % 4].classList.remove('fz-30');
+              i++;
+              signals[i % 4].classList.add('fz-30');
+              if (i % 4 === 0) {
+                claves();
+              } else {
+                rimshot();
+              }
+              sequence();
+            }, bpm);
+          }
+
+
+
+          const start_btn = document.getElementById('start');
+          // console.log(start);
+
+
+          start_btn.onclick = start;
+
+          const stop_btn = document.getElementById('stop');
+          console.log(stop_btn);
+          function stop() {
+            clearTimeout(timerId);
+            signals[i % 4].classList.remove('fz-30');
+            isRunning = false;
+            i = 0;
+          }
+          stop_btn.onclick = stop;
+
+          /*
+          4%4 0
+    4%3 1
+    4%2 2
+    4%1 3
+    
+    
+    bpm
+    60000 / 60bpm = 1000ms
+    60000 / 120bpm = 500ms
+    */
+
+        </script>
+  </body>
+
+</html>
